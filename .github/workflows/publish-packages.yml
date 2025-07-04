@@ -26,8 +26,8 @@ jobs:
           useConfigFile: true
       - name: Pack NuGet packages
         run: |
-          dotnet restore ballware-shared-dotnet.sln
-          dotnet pack ballware-shared-dotnet.sln -p:Version=${{ env.GitVersion_SemVer }} --configuration Release --output ./nupkgs
+          dotnet restore ballware-shared.sln
+          dotnet pack ballware-shared.sln -p:Version=${{ env.GitVersion_SemVer }} --configuration Release --output ./nupkgs
       - name: Publish NuGet packages to GitHub Packages
         run: |
           dotnet nuget push ./nupkgs/*.nupkg --source https://nuget.pkg.github.com/ballware/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate

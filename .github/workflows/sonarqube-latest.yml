@@ -39,7 +39,7 @@ jobs:
             /d:sonar.cs.dotcover.reportsPaths="coverage.html" \
             /d:sonar.exclusions="**/Migrations/**/*"
       - name: Build solution
-        run: dotnet build ballware-shared-dotnet.sln --no-incremental --configuration Release
+        run: dotnet build ballware-shared.sln --no-incremental --configuration Release
 
       - name: Run coverage for all test projects
         run: |
