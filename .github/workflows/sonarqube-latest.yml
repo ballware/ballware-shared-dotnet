@@ -1,0 +1,73 @@
+name: Analyse SonarQube Latest
+
+on:
+  push:
+    branches: ['main', 'develop', 'feature/*', 'bugfix/*']  
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with: 
+          dotnet-version: 
+            8.0
+      - name: Download and extract dotCover CLI
+        run: |
+          curl -L -o dotcover.tar.gz "https://download.jetbrains.com/resharper/dotUltimate.2025.1.2/JetBrains.dotCover.CommandLineTools.2025.1.2.tar.gz"
+          mkdir dotcover
+          tar -xzf dotcover.tar.gz -C dotcover
+          
+      - name: Install SonarQube
+        run: dotnet tool install --global dotnet-sonarscanner
+        
+      - name: Start SonarQube scan
+        run: | 
+          dotnet sonarscanner begin \
+            /k:"ballware_ballware-shared-dotnet" \
+            /o:"ballware" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.cs.dotcover.reportsPaths="coverage.html" \
+            /d:sonar.exclusions="**/Migrations/**/*"
+      - name: Build solution
+        run: dotnet build ballware-shared-dotnet.sln --no-incremental --configuration Release
+
+      - name: Run coverage for all test projects
+        run: |
+          mkdir -p coverage
+          i=0
+          find ./test -name '*.Tests.csproj' | while read project; do
+            echo "Running coverage for: $project"
+            dotnet dotcover/dotCover.dll cover \
+              --targetExecutable="/usr/bin/dotnet" \
+              --targetArguments="test $project --configuration Release --logger trx" \
+              --output="coverage/project_$i.dcvr" \
+              --returnTargetExitCode
+            ((i=i+1))
+          done
+
+      - name: Merge coverage snapshots
+        run: |
+          snapshots=$(find coverage -name '*.dcvr' | paste -sd ';' -)
+          dotnet dotcover/dotCover.dll merge \
+            --source="$snapshots" \
+            --output="coverage.dcvr"
+          
+      - name: Generate HTML report for SonarCloud
+        run: |
+          dotnet dotcover/dotCover.dll report \
+            --source="coverage.dcvr" \
+            --output="coverage.html" \
+            --reportType=HTML           
+        
+      - name: End SonarQube scan
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}" 

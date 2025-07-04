@@ -1,0 +1,40 @@
+name: Publish packages and images
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version:
+            8.0   
+      - name: Install GitVersion
+        run: dotnet tool install --global GitVersion.Tool
+      - name: Fetch GitVersion
+        uses: gittools/actions/gitversion/execute@v0
+        with:
+          useConfigFile: true
+      - name: Pack NuGet packages
+        run: |
+          dotnet restore ballware-shared-dotnet.sln
+          dotnet pack ballware-shared-dotnet.sln -p:Version=${{ env.GitVersion_SemVer }} --configuration Release --output ./nupkgs
+      - name: Publish NuGet packages to GitHub Packages
+        run: |
+          dotnet nuget push ./nupkgs/*.nupkg --source https://nuget.pkg.github.com/ballware/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+      - name: Create version tag on release
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag v${{ env.GitVersion_SemVer }}
+          git push origin refs/tags/v${{ env.GitVersion_SemVer }} refs/heads/main
