@@ -5,7 +5,7 @@ namespace Ballware.Shared.Authorization.Jint;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddBallwareMetaJintRightsChecker(this IServiceCollection services)
+    public static IServiceCollection AddBallwareSharedJintRightsChecker(this IServiceCollection services)
     {
         services.AddSingleton<ITenantRightsChecker, JavascriptTenantRightsChecker>();
         services.AddSingleton<IEntityRightsChecker, JavascriptEntityRightsChecker>();

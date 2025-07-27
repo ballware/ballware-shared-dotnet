@@ -13,7 +13,7 @@ public class ServiceCollectionExtensionsTest
         
         // Act
         services.AddLogging();
-        services.AddBallwareMetaJintRightsChecker();
+        services.AddBallwareSharedJintRightsChecker();
         
         var serviceProvider = services.BuildServiceProvider();
         
