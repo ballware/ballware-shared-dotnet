@@ -9,13 +9,13 @@ using Newtonsoft.Json;
 
 namespace Ballware.Shared.Data.Ef.Repository;
 
-public class TenantableRepository<TEditable, TPersistable> : ITenantableRepository<TEditable> where TEditable : class, IEditable where TPersistable : class, IEntity, ITenantable, new()
+public class TenantableBaseRepository<TEditable, TPersistable> : ITenantableRepository<TEditable> where TEditable : class, IEditable where TPersistable : class, IEntity, ITenantable, new()
 {
     protected IMapper Mapper { get; }
     protected IDbContext Context { get; }
     protected ITenantableRepositoryHook<TEditable, TPersistable>? Hook { get; }
 
-    public TenantableRepository(IMapper mapper, IDbContext dbContext, ITenantableRepositoryHook<TEditable, TPersistable>? hook)
+    public TenantableBaseRepository(IMapper mapper, IDbContext dbContext, ITenantableRepositoryHook<TEditable, TPersistable>? hook)
     {
         Mapper = mapper;
         Context = dbContext;

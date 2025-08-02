@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
-namespace Ballware.Shared.Data.Ef.Tests.Repository;
+namespace Ballware.Shared.Data.Ef.Tests.Base;
 
 public class PublicEntity : IEditable
 {
@@ -19,11 +19,10 @@ public class PublicEntity : IEditable
     public int IntProperty { get; set; }
 }
 
-public class PersistedEntity : IEntity, ITenantable, IAuditable
+public class PersistedEntity : IEntity, IAuditable
 {
     public long? Id { get; set; }
     public Guid Uuid { get; set; }
-    public Guid TenantId { get; set; }
     
     public string? StringProperty { get; set; }
     public int IntProperty { get; set; }
@@ -45,23 +44,23 @@ class TestDbContext : DbContext, IDbContext
         base.OnModelCreating(modelBuilder);
         
         modelBuilder.Entity<PersistedEntity>().HasKey(d => d.Id);
-        modelBuilder.Entity<PersistedEntity>().HasIndex(d => new { d.TenantId, d.Uuid }).IsUnique();
+        modelBuilder.Entity<PersistedEntity>().HasIndex(d => new { d.Uuid }).IsUnique();
     }
 }
 
-class FakeRepositoryHook : ITenantableRepositoryHook<PublicEntity, PersistedEntity>
+class FakeRepositoryHook : IRepositoryHook<PublicEntity, PersistedEntity>
 {
     
 }
 
-class DeclineRemoveRepository : TenantableRepository<PublicEntity, PersistedEntity>
+class DeclineRemoveRepository : BaseRepository<PublicEntity, PersistedEntity>
 {
     public DeclineRemoveRepository(IMapper mapper, IDbContext context,
-        ITenantableRepositoryHook<PublicEntity, PersistedEntity>? hook) : base(mapper, context, hook)
+        IRepositoryHook<PublicEntity, PersistedEntity>? hook) : base(mapper, context, hook)
     {
     }
 
-    protected override Task<RemoveResult<PublicEntity>> RemovePreliminaryCheckAsync(Guid tenantId, Guid? userId, IDictionary<string, object> claims, IDictionary<string, object> removeParams,
+    protected override Task<RemoveResult<PublicEntity>> RemovePreliminaryCheckAsync(Guid? userId, IDictionary<string, object> claims, IDictionary<string, object> removeParams,
         PublicEntity? removeValue)
     {
         return Task.FromResult(new RemoveResult<PublicEntity>()
@@ -72,7 +71,7 @@ class DeclineRemoveRepository : TenantableRepository<PublicEntity, PersistedEnti
     }
 }
 
-public class TenantableRepositoryTest
+public class RepositoryTest
 {
     private IMapper Mapper { get; set; }
     private TestDbContext DbContext { get; set; }
@@ -115,18 +114,16 @@ public class TenantableRepositoryTest
     [Test]
     public async Task Save_and_remove_value_succeeds()
     {
-        var expectedTenantId = Guid.NewGuid();
-        
-        var repository = new TenantableRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
+        var repository = new BaseRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
 
-        var expectedValue = await repository.NewQueryAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
+        var expectedValue = await repository.NewQueryAsync("primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
         
         expectedValue.StringProperty = "fake_string";
         expectedValue.IntProperty = 10;
         
-        await repository.SaveAsync(expectedTenantId, null, "primary", ImmutableDictionary<string, object>.Empty, expectedValue);
+        await repository.SaveAsync(null, "primary", ImmutableDictionary<string, object>.Empty, expectedValue);
 
-        var actualValue = await repository.ByIdAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
+        var actualValue = await repository.ByIdAsync("primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
 
         Assert.Multiple(() =>
         {
@@ -138,9 +135,9 @@ public class TenantableRepositoryTest
 
         actualValue.IntProperty = 22;
         
-        await repository.SaveAsync(expectedTenantId, null, "primary", ImmutableDictionary<string, object>.Empty, actualValue);
+        await repository.SaveAsync(null, "primary", ImmutableDictionary<string, object>.Empty, actualValue);
 
-        actualValue = await repository.ByIdAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
+        actualValue = await repository.ByIdAsync("primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
 
         Assert.Multiple(() =>
         {
@@ -152,7 +149,7 @@ public class TenantableRepositoryTest
         
         var removeParams = new Dictionary<string, object>([new KeyValuePair<string, object>("Id", expectedValue.Id)]);
 
-        var removeResult = await repository.RemoveAsync(expectedTenantId, null, ImmutableDictionary<string, object>.Empty, removeParams);
+        var removeResult = await repository.RemoveAsync(null, ImmutableDictionary<string, object>.Empty, removeParams);
 
         Assert.Multiple(() =>
         {
@@ -161,7 +158,7 @@ public class TenantableRepositoryTest
             Assert.That(removeResult.Value, Is.Not.Null);
         });
 
-        actualValue = await repository.ByIdAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
+        actualValue = await repository.ByIdAsync("primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
 
         Assert.That(actualValue, Is.Null);
     }
@@ -169,18 +166,16 @@ public class TenantableRepositoryTest
     [Test]
     public async Task Save_and_remove_value_declined()
     {
-        var expectedTenantId = Guid.NewGuid();
-        
         var repository = new DeclineRemoveRepository(Mapper, DbContext, null);
 
-        var expectedValue = await repository.NewQueryAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
+        var expectedValue = await repository.NewQueryAsync("primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
         
         expectedValue.StringProperty = "fake_string";
         expectedValue.IntProperty = 10;
         
-        await repository.SaveAsync(expectedTenantId, null, "primary", ImmutableDictionary<string, object>.Empty, expectedValue);
+        await repository.SaveAsync(null, "primary", ImmutableDictionary<string, object>.Empty, expectedValue);
 
-        var actualValue = await repository.ByIdAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
+        var actualValue = await repository.ByIdAsync("primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
 
         Assert.Multiple(() =>
         {
@@ -192,7 +187,7 @@ public class TenantableRepositoryTest
 
         var removeParams = new Dictionary<string, object>([new KeyValuePair<string, object>("Id", expectedValue.Id)]);
 
-        var removeResult = await repository.RemoveAsync(expectedTenantId, null, ImmutableDictionary<string, object>.Empty, removeParams);
+        var removeResult = await repository.RemoveAsync(null, ImmutableDictionary<string, object>.Empty, removeParams);
 
         Assert.Multiple(() =>
         {
@@ -200,7 +195,7 @@ public class TenantableRepositoryTest
             Assert.That(removeResult.Messages, Is.EqualTo(["Remove declined"]));
         });
 
-        actualValue = await repository.ByIdAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
+        actualValue = await repository.ByIdAsync("primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
 
         Assert.That(actualValue, Is.Not.Null);
     }
@@ -208,18 +203,16 @@ public class TenantableRepositoryTest
     [Test]
     public async Task Save_and_remove_value_with_hook_succeeds()
     {
-        var expectedTenantId = Guid.NewGuid();
-        
-        var repository = new TenantableRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, new FakeRepositoryHook());
+        var repository = new BaseRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, new FakeRepositoryHook());
 
-        var expectedValue = await repository.NewQueryAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
+        var expectedValue = await repository.NewQueryAsync("primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
         
         expectedValue.StringProperty = "fake_string";
         expectedValue.IntProperty = 10;
         
-        await repository.SaveAsync(expectedTenantId, null, "primary", ImmutableDictionary<string, object>.Empty, expectedValue);
+        await repository.SaveAsync(null, "primary", ImmutableDictionary<string, object>.Empty, expectedValue);
 
-        var actualValue = await repository.ByIdAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
+        var actualValue = await repository.ByIdAsync("primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
 
         Assert.Multiple(() =>
         {
@@ -231,14 +224,14 @@ public class TenantableRepositoryTest
 
         var removeParams = new Dictionary<string, object>([new KeyValuePair<string, object>("Id", expectedValue.Id)]);
 
-        var removeResult = await repository.RemoveAsync(expectedTenantId, null, ImmutableDictionary<string, object>.Empty, removeParams);
+        var removeResult = await repository.RemoveAsync(null, ImmutableDictionary<string, object>.Empty, removeParams);
 
         Assert.Multiple(() =>
         {
             Assert.That(removeResult.Result, Is.True);
         });
 
-        actualValue = await repository.ByIdAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
+        actualValue = await repository.ByIdAsync("primary", ImmutableDictionary<string, object>.Empty, expectedValue.Id);
 
         Assert.That(actualValue, Is.Null);
     }
@@ -246,51 +239,42 @@ public class TenantableRepositoryTest
     [Test]
     public async Task Query_items_succeeds()
     {
-        var expectedTenantId = Guid.NewGuid();
-        
-        var repository = new TenantableRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
+        var repository = new BaseRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
 
-        var fakeTenantIds = new[] { Guid.NewGuid(), Guid.NewGuid(), expectedTenantId, Guid.NewGuid() };
-        
-        foreach (var fakeTenant in fakeTenantIds)
+        for (var i = 0; i < 10; i++)
         {
-            for (var i = 0; i < 10; i++)
-            {
-                var fakeValue = await repository.NewAsync(fakeTenant, "primary", ImmutableDictionary<string, object>.Empty);
+            var fakeValue = await repository.NewAsync("primary", ImmutableDictionary<string, object>.Empty);
 
-                fakeValue.StringProperty = $"fake_string_{fakeTenant.ToString()}_{i}";
-                fakeValue.IntProperty = i;
-                
-                await repository.SaveAsync(fakeTenant, null, "primary", ImmutableDictionary<string, object>.Empty, fakeValue);
-            }
+            fakeValue.StringProperty = $"fake_string_{i}";
+            fakeValue.IntProperty = i;
+            
+            await repository.SaveAsync(null, "primary", ImmutableDictionary<string, object>.Empty, fakeValue);
         }
 
-        var actualTenantItemsCount = await repository.CountAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
-        var actualTenantAllItems = await repository.AllAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty);
-        var actualTenantQueryItems = await repository.QueryAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
+        var actualItemsCount = await repository.CountAsync("primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
+        var actualAllItems = await repository.AllAsync("primary", ImmutableDictionary<string, object>.Empty);
+        var actualQueryItems = await repository.QueryAsync("primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
         
         Assert.Multiple(() =>
         {
-            Assert.That(actualTenantItemsCount, Is.EqualTo(10));
-            Assert.That(actualTenantAllItems.Count(), Is.EqualTo(10));
-            Assert.That(actualTenantQueryItems.Count(), Is.EqualTo(10));
+            Assert.That(actualItemsCount, Is.EqualTo(10));
+            Assert.That(actualAllItems.Count(), Is.EqualTo(10));
+            Assert.That(actualQueryItems.Count(), Is.EqualTo(10));
         });
     }
 
     [Test]
     public async Task Import_values_succeeds()
     {
-        var expectedTenantId = Guid.NewGuid();
-        
-        var repository = new TenantableRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
+        var repository = new BaseRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
 
         var importList = new List<PublicEntity>();
 
         for (var i = 0; i < 10; i++)
         {
-            var fakeValue = await repository.NewAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty);
+            var fakeValue = await repository.NewAsync("primary", ImmutableDictionary<string, object>.Empty);
 
-            fakeValue.StringProperty = $"fake_string_{expectedTenantId.ToString()}_{i}";
+            fakeValue.StringProperty = $"fake_string_{i}";
             fakeValue.IntProperty = i;
 
             importList.Add(fakeValue);
@@ -300,59 +284,55 @@ public class TenantableRepositoryTest
 
         using var importStream = new MemoryStream(importBinary);
 
-        await repository.ImportAsync(expectedTenantId, null, "primary", ImmutableDictionary<string, object>.Empty, importStream, (_) => Task.FromResult(true));
+        await repository.ImportAsync(null, "primary", ImmutableDictionary<string, object>.Empty, importStream, (_) => Task.FromResult(true));
 
-        var actualTenantItemsCount = await repository.CountAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
-        var actualTenantAllItems = await repository.AllAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty);
-        var actualTenantQueryItems = await repository.QueryAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
+        var actualItemsCount = await repository.CountAsync("primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
+        var actualAllItems = await repository.AllAsync("primary", ImmutableDictionary<string, object>.Empty);
+        var actualQueryItems = await repository.QueryAsync("primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
         
         Assert.Multiple(() =>
         {
-            Assert.That(actualTenantItemsCount, Is.EqualTo(10));
-            Assert.That(actualTenantAllItems.Count(), Is.EqualTo(10));
-            Assert.That(actualTenantQueryItems.Count(), Is.EqualTo(10));
+            Assert.That(actualItemsCount, Is.EqualTo(10));
+            Assert.That(actualAllItems.Count(), Is.EqualTo(10));
+            Assert.That(actualQueryItems.Count(), Is.EqualTo(10));
         });
     }
     
     [Test]
     public async Task Import_empty_succeeds()
     {
-        var expectedTenantId = Guid.NewGuid();
-        
-        var repository = new TenantableRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
+        var repository = new BaseRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
 
-        await repository.ImportAsync(expectedTenantId, null, "primary", ImmutableDictionary<string, object>.Empty, new MemoryStream(), (_) => Task.FromResult(true));
+        await repository.ImportAsync(null, "primary", ImmutableDictionary<string, object>.Empty, new MemoryStream(), (_) => Task.FromResult(true));
 
-        var actualTenantItemsCount = await repository.CountAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
-        var actualTenantAllItems = await repository.AllAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty);
-        var actualTenantQueryItems = await repository.QueryAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
+        var actualItemsCount = await repository.CountAsync("primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
+        var actualAllItems = await repository.AllAsync("primary", ImmutableDictionary<string, object>.Empty);
+        var actualQueryItems = await repository.QueryAsync("primary", ImmutableDictionary<string, object>.Empty, ImmutableDictionary<string, object>.Empty);
         
         Assert.Multiple(() =>
         {
-            Assert.That(actualTenantItemsCount, Is.EqualTo(0));
-            Assert.That(actualTenantAllItems.Count(), Is.EqualTo(0));
-            Assert.That(actualTenantQueryItems.Count(), Is.EqualTo(0));
+            Assert.That(actualItemsCount, Is.EqualTo(0));
+            Assert.That(actualAllItems.Count(), Is.EqualTo(0));
+            Assert.That(actualQueryItems.Count(), Is.EqualTo(0));
         });
     }
 
     [Test]
     public async Task Export_values_succeeds()
     {
-        var expectedTenantId = Guid.NewGuid();
-        
-        var repository = new TenantableRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
+        var repository = new BaseRepository<PublicEntity, PersistedEntity>(Mapper, DbContext, null);
 
         var exportIdList = new List<Guid>();
         var exportItemList = new List<PublicEntity>();
 
         for (var i = 0; i < 10; i++)
         {
-            var fakeValue = await repository.NewAsync(expectedTenantId, "primary", ImmutableDictionary<string, object>.Empty);
+            var fakeValue = await repository.NewAsync("primary", ImmutableDictionary<string, object>.Empty);
 
-            fakeValue.StringProperty = $"fake_string_{expectedTenantId}_{i}";
+            fakeValue.StringProperty = $"fake_string_{i}";
             fakeValue.IntProperty = i;
 
-            await repository.SaveAsync(expectedTenantId, null, "primary", ImmutableDictionary<string, object>.Empty, fakeValue);
+            await repository.SaveAsync(null, "primary", ImmutableDictionary<string, object>.Empty, fakeValue);
 
             if (i % 2 == 0)
             {
@@ -361,10 +341,10 @@ public class TenantableRepositoryTest
             }
         }
 
-        var singleExportResult = await repository.ExportAsync(expectedTenantId, "exportjson", ImmutableDictionary<string, object>.Empty, 
+        var singleExportResult = await repository.ExportAsync("exportjson", ImmutableDictionary<string, object>.Empty, 
             new Dictionary<string, object>(new [] { new KeyValuePair<string, object>("id", exportIdList[0]) }));
 
-        var multipleExportResult = await repository.ExportAsync(expectedTenantId, "exportjson", ImmutableDictionary<string, object>.Empty, 
+        var multipleExportResult = await repository.ExportAsync("exportjson", ImmutableDictionary<string, object>.Empty, 
             new Dictionary<string, object>(new[] { new KeyValuePair<string, object>("id", exportIdList.Select(id => id.ToString()).ToArray()) }));
         
         Assert.Multiple(() =>
