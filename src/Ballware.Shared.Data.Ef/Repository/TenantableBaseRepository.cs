@@ -59,6 +59,11 @@ public class TenantableBaseRepository<TEditable, TPersistable> : ITenantableRepo
 
     protected virtual Task<TEditable> ExtendByIdAsync(string identifier, IDictionary<string, object> claims, Guid tenantId, TEditable value)
     {
+        if (Hook != null)
+        {
+            return Task.FromResult(Hook.ExtendById(tenantId, identifier, claims, value));
+        }
+        
         return Task.FromResult(value);
     }
 

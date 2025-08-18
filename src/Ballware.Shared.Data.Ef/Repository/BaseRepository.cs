@@ -58,6 +58,11 @@ public class BaseRepository<TEditable, TPersistable> : IRepository<TEditable> wh
 
     protected virtual Task<TEditable> ExtendByIdAsync(string identifier, IDictionary<string, object> claims, TEditable value)
     {
+        if (Hook != null)
+        {
+            return Task.FromResult(Hook.ExtendById(identifier, claims, value));
+        }
+        
         return Task.FromResult(value);
     }
 

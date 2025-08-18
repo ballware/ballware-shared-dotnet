@@ -3,6 +3,11 @@ namespace Ballware.Shared.Data.Repository;
 public interface IRepositoryHook<TEditable, TPersistable> where TEditable : class
     where TPersistable : class
 {
+    TEditable ExtendById(string identifier, IDictionary<string, object> claims, TEditable value)
+    {
+        return value;
+    }
+    
     void BeforeSave(Guid? userId, string identifier, IDictionary<string, object> claims, TEditable value,
         bool insert) {}
 
