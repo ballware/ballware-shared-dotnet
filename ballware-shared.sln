@@ -14,6 +14,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Authorizati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Authorization.Jint.Tests", "test\Ballware.Shared.Authorization.Jint.Tests\Ballware.Shared.Authorization.Jint.Tests.csproj", "{649189C0-D56C-49E9-A429-F03D0B23BFE8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Api", "src\Ballware.Shared.Api\Ballware.Shared.Api.csproj", "{83EEC3B8-0258-4648-8A9C-CA2E63802C75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Api.Jobs", "src\Ballware.Shared.Api.Jobs\Ballware.Shared.Api.Jobs.csproj", "{60EAE246-EC91-4444-9893-C43E55848031}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Api.Endpoints", "src\Ballware.Shared.Api.Endpoints\Ballware.Shared.Api.Endpoints.csproj", "{71D82FCA-7F27-4F57-ADED-EF1A70B0CD39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Api.Jobs.Tests", "test\Ballware.Shared.Api.Jobs.Tests\Ballware.Shared.Api.Jobs.Tests.csproj", "{FF08BBE3-CFD2-4D5E-82EA-3C79B8706D51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Api.Endpoints.Tests", "test\Ballware.Shared.Api.Endpoints.Tests\Ballware.Shared.Api.Endpoints.Tests.csproj", "{D89E89FC-3AAA-4708-9BD2-E71A9892B18E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +58,25 @@ Global
 		{649189C0-D56C-49E9-A429-F03D0B23BFE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{649189C0-D56C-49E9-A429-F03D0B23BFE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{649189C0-D56C-49E9-A429-F03D0B23BFE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83EEC3B8-0258-4648-8A9C-CA2E63802C75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83EEC3B8-0258-4648-8A9C-CA2E63802C75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83EEC3B8-0258-4648-8A9C-CA2E63802C75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83EEC3B8-0258-4648-8A9C-CA2E63802C75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60EAE246-EC91-4444-9893-C43E55848031}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60EAE246-EC91-4444-9893-C43E55848031}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60EAE246-EC91-4444-9893-C43E55848031}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60EAE246-EC91-4444-9893-C43E55848031}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71D82FCA-7F27-4F57-ADED-EF1A70B0CD39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71D82FCA-7F27-4F57-ADED-EF1A70B0CD39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71D82FCA-7F27-4F57-ADED-EF1A70B0CD39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71D82FCA-7F27-4F57-ADED-EF1A70B0CD39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF08BBE3-CFD2-4D5E-82EA-3C79B8706D51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF08BBE3-CFD2-4D5E-82EA-3C79B8706D51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF08BBE3-CFD2-4D5E-82EA-3C79B8706D51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF08BBE3-CFD2-4D5E-82EA-3C79B8706D51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D89E89FC-3AAA-4708-9BD2-E71A9892B18E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D89E89FC-3AAA-4708-9BD2-E71A9892B18E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D89E89FC-3AAA-4708-9BD2-E71A9892B18E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D89E89FC-3AAA-4708-9BD2-E71A9892B18E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
