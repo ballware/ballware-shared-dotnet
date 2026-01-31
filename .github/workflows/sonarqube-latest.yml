@@ -50,7 +50,7 @@ jobs:
             echo "Running coverage for: $project"
             dotCover cover \
               --TargetExecutable="/usr/bin/dotnet" \
-              --TargetArguments="test $project --configuration Release --logger trx" \
+              --TargetArguments="test $project --no-build --configuration Release --logger trx" \
               --Output="coverage/project_$i.dcvr" \
               --ReturnTargetExitCode
             ((i=i+1))
