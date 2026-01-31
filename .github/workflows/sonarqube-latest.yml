@@ -44,24 +44,11 @@ jobs:
 
       - name: Run coverage for all test projects
         run: |
-          mkdir -p coverage
-          i=0
-          find ./test -name '*.Tests.csproj' | while read project; do
-            echo "Running coverage for: $project"
-            dotCover cover \
-              --TargetExecutable="/usr/bin/dotnet" \
-              --TargetArguments="test $project --no-build --configuration Release --logger trx" \
-              --Output="coverage/project_$i.dcvr" \
-              --ReturnTargetExitCode
-            ((i=i+1))
-          done
-
-      - name: Merge coverage snapshots
-        run: |
-          snapshots=$(find coverage -name '*.dcvr' | paste -sd ';' -)
-          dotCover merge \
-            --source="$snapshots" \
-            --output="coverage.dcvr"
+          dotCover cover \
+            --TargetExecutable="/usr/bin/dotnet" \
+            --TargetArguments="test ballware-shared.sln --no-build --configuration Release --logger trx" \
+            --Output="coverage.dcvr" \
+            --ReturnTargetExitCode
           
       - name: Generate HTML report for SonarCloud
         run: |
