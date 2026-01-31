@@ -21,11 +21,8 @@ jobs:
         with: 
           dotnet-version: 
             10.0
-      - name: Download and extract dotCover CLI
-        run: |
-          curl -L -o dotcover.tar.gz "https://download.jetbrains.com/resharper/dotUltimate.2025.1.2/JetBrains.dotCover.CommandLineTools.2025.1.2.tar.gz"
-          mkdir dotcover
-          tar -xzf dotcover.tar.gz -C dotcover
+      - name: Install dotCover CLI
+        run: dotnet tool install --global JetBrains.dotCover.CommandLineTools --version 2025.1.7
           
       - name: Install SonarQube
         run: dotnet tool install --global dotnet-sonarscanner
@@ -38,6 +35,10 @@ jobs:
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.cs.dotcover.reportsPaths="coverage.html" \
             /d:sonar.exclusions="**/Migrations/**/*"
+          
+      - name: Restore dependencies
+        run: dotnet restore ballware-shared.sln            
+          
       - name: Build solution
         run: dotnet build ballware-shared.sln --no-incremental --configuration Release
 
@@ -47,24 +48,24 @@ jobs:
           i=0
           find ./test -name '*.Tests.csproj' | while read project; do
             echo "Running coverage for: $project"
-            dotnet dotcover/dotCover.dll cover \
-              --targetExecutable="/usr/bin/dotnet" \
-              --targetArguments="test $project --configuration Release --logger trx" \
-              --output="coverage/project_$i.dcvr" \
-              --returnTargetExitCode
+            dotCover cover \
+              --TargetExecutable="/usr/bin/dotnet" \
+              --TargetArguments="test $project --configuration Release --logger trx" \
+              --Output="coverage/project_$i.dcvr" \
+              --ReturnTargetExitCode
             ((i=i+1))
           done
 
       - name: Merge coverage snapshots
         run: |
           snapshots=$(find coverage -name '*.dcvr' | paste -sd ';' -)
-          dotnet dotcover/dotCover.dll merge \
+          dotCover merge \
             --source="$snapshots" \
             --output="coverage.dcvr"
           
       - name: Generate HTML report for SonarCloud
         run: |
-          dotnet dotcover/dotCover.dll report \
+          dotCover report \
             --source="coverage.dcvr" \
             --output="coverage.html" \
             --reportType=HTML           
