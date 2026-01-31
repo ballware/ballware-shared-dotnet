@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with: 
           dotnet-version: 
-            8.0
+            10.0
       - name: Download and extract dotCover CLI
         run: |
           curl -L -o dotcover.tar.gz "https://download.jetbrains.com/resharper/dotUltimate.2025.1.2/JetBrains.dotCover.CommandLineTools.2025.1.2.tar.gz"

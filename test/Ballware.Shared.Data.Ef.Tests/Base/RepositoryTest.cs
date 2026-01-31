@@ -7,6 +7,7 @@ using Ballware.Shared.Data.Public;
 using Ballware.Shared.Data.Repository;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 
 namespace Ballware.Shared.Data.Ef.Tests.Base;
@@ -88,7 +89,7 @@ public class RepositoryTest
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Uuid, opt => opt.MapFrom(src => src.Id));
             
-        }).CreateMapper();
+        }, NullLoggerFactory.Instance).CreateMapper();
     }
 
     [SetUp]
