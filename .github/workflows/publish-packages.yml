@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version:
-            8.0   
+            10.0   
       - name: Install GitVersion
         run: dotnet tool install --global GitVersion.Tool
       - name: Fetch GitVersion
