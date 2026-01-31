@@ -46,7 +46,7 @@ jobs:
         run: |
           dotCover cover \
             --TargetExecutable="/usr/bin/dotnet" \
-            --TargetArguments="test ballware-shared.sln --no-build --configuration Release --logger trx" \
+            --TargetArguments="test ./ballware-shared.sln --no-build --configuration Release --logger trx" \
             --Output="coverage.dcvr" \
             --ReturnTargetExitCode
           
