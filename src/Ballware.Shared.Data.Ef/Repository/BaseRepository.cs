@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
 using System.Text;
-using AutoMapper;
 using Ballware.Shared.Data.Persistables;
 using Ballware.Shared.Data.Public;
 using Ballware.Shared.Data.Repository;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 

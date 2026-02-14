@@ -1,10 +1,11 @@
 using System.Collections.Immutable;
 using System.Text;
-using AutoMapper;
 using Ballware.Shared.Data.Ef.Repository;
 using Ballware.Shared.Data.Persistables;
 using Ballware.Shared.Data.Public;
 using Ballware.Shared.Data.Repository;
+using Mapster;
+using MapsterMapper;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -80,16 +81,18 @@ public class RepositoryTest
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        Mapper = new MapperConfiguration(cfg =>
-        {
-            cfg.CreateMap<PersistedEntity, PublicEntity>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Uuid));
-            
-            cfg.CreateMap<PublicEntity, PersistedEntity>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Uuid, opt => opt.MapFrom(src => src.Id));
-            
-        }, NullLoggerFactory.Instance).CreateMapper();
+        var config = new TypeAdapterConfig();
+
+        config.NewConfig<PersistedEntity, PublicEntity>()
+            .Map(dest => dest.Id, src => src.Uuid);
+
+        config.NewConfig<PublicEntity, PersistedEntity>()
+            .Ignore(dest => dest.Id!)
+            .Map(dest => dest.Uuid, src => src.Id);
+
+        config.Compile();
+
+        Mapper = new Mapper(config);
     }
 
     [SetUp]
