@@ -57,13 +57,19 @@ internal static class ToolRegistryRequestHandlers
         
         foreach (var tool in await toolRegistry.GetAllToolsAsync())
         {
-            result.Tools.Add(
-                new ModelContextProtocol.Protocol.Tool()
-                {
-                    Name = tool.Name,
-                    Description = tool.Description,
-                    InputSchema = CreateInputSchemaFromParams(tool.Params)
-                });
+            var protocolTool = new ModelContextProtocol.Protocol.Tool()
+            {
+                Name = tool.Name,
+                Description = tool.Description,
+                InputSchema = CreateInputSchemaFromParams(tool.Params)
+            };
+
+            if (tool.OutputSchema != null)
+            {
+                protocolTool.OutputSchema = JsonSerializer.Deserialize<JsonElement>(tool.OutputSchema);
+            }
+            
+            result.Tools.Add(protocolTool);
         }
 
         return result;
@@ -151,16 +157,25 @@ internal static class ToolRegistryRequestHandlers
         }
         
         var result = await tool.ExecuteAsync(serviceProvider, user, arguments);
-        
-        return new CallToolResult()
+
+        var callToolResult = new CallToolResult();
+
+        if (result.Text != null)
         {
-            Content =
+            callToolResult.Content =
             [
                 new TextContentBlock()
                 {
-                    Text = result
+                    Text = result.Text
                 }
-            ]
-        };
+            ];
+        }
+
+        if (result.StructuredContent != null)
+        {
+            callToolResult.StructuredContent = result.StructuredContent.Value;
+        }
+        
+        return callToolResult;
     }
 }
