@@ -160,7 +160,21 @@ internal static class ToolRegistryRequestHandlers
 
         var callToolResult = new CallToolResult();
 
-        if (result.Text != null)
+        if (result.StructuredContent != null)
+        {
+            callToolResult.StructuredContent = result.StructuredContent.Value;
+            
+            // Content must always be provided for backward compatibility.
+            // Use explicit text if available, otherwise serialize structured content as JSON text.
+            callToolResult.Content =
+            [
+                new TextContentBlock()
+                {
+                    Text = result.Text ?? JsonSerializer.Serialize(result.StructuredContent.Value)
+                }
+            ];
+        }
+        else if (result.Text != null)
         {
             callToolResult.Content =
             [
@@ -169,11 +183,6 @@ internal static class ToolRegistryRequestHandlers
                     Text = result.Text
                 }
             ];
-        }
-
-        if (result.StructuredContent != null)
-        {
-            callToolResult.StructuredContent = result.StructuredContent.Value;
         }
         
         return callToolResult;
