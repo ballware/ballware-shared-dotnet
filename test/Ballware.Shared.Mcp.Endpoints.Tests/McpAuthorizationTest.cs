@@ -113,6 +113,12 @@ public class McpAuthorizationTest : ApiMappingBaseTest
             {
                 endpoints.MapBallwareUserMcpEndpoint(McpBasePath, Options);
             });
+        }, preAuth =>
+        {
+            // Register the OAuth Protected Resource middleware before authentication
+            // so it can serve /.well-known/oauth-protected-resource without auth
+            // and enrich 401 responses with proper WWW-Authenticate headers
+            preAuth.UseBallwareMcpOAuthProtectedResource(Options, ExpectedAuthorizationServerUri);
         });
 
         if (!includeAuthHeader)

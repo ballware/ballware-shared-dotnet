@@ -72,7 +72,8 @@ public abstract class ApiMappingBaseTest
     protected Task<HttpClient> CreateApplicationClientAsync(
         string expectedScope,
         Action<IServiceCollection>? configureServices = null, 
-        Action<IApplicationBuilder>? configureApp = null)
+        Action<IApplicationBuilder>? configureApp = null,
+        Action<IApplicationBuilder>? configurePreAuth = null)
     {
         Claims.Add(new Claim("scope", expectedScope));
         
@@ -98,6 +99,8 @@ public abstract class ApiMappingBaseTest
             configureServices?.Invoke(services);
         }).Configure(app =>
         {
+            configurePreAuth?.Invoke(app);
+            
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
