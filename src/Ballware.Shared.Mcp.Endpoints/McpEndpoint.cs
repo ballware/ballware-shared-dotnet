@@ -11,7 +11,8 @@ public static class McpEndpoint
     {
         if (options is { Enabled: true })
         {
-            app.MapMcp(basePath).RequireAuthorization(builder =>
+            app.MapMcp(basePath)
+                .RequireAuthorization(builder =>
             {
                 builder.AuthenticationSchemes = [JwtBearerDefaults.AuthenticationScheme];
                 builder.RequireAssertion(context =>

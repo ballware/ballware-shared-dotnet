@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Mcp", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Mcp.Endpoints", "src\Ballware.Shared.Mcp.Endpoints\Ballware.Shared.Mcp.Endpoints.csproj", "{08421423-17FA-43AE-8BE9-0C576E401EE8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Shared.Mcp.Endpoints.Tests", "test\Ballware.Shared.Mcp.Endpoints.Tests\Ballware.Shared.Mcp.Endpoints.Tests.csproj", "{858678B9-2F97-49B1-B19D-4881687E4A8F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,5 +92,9 @@ Global
 		{08421423-17FA-43AE-8BE9-0C576E401EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08421423-17FA-43AE-8BE9-0C576E401EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08421423-17FA-43AE-8BE9-0C576E401EE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{858678B9-2F97-49B1-B19D-4881687E4A8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{858678B9-2F97-49B1-B19D-4881687E4A8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{858678B9-2F97-49B1-B19D-4881687E4A8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{858678B9-2F97-49B1-B19D-4881687E4A8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
