@@ -21,8 +21,6 @@ jobs:
         with: 
           dotnet-version: 
             10.0
-      - name: Install dotCover CLI
-        run: dotnet tool install --global JetBrains.dotCover.CommandLineTools --version 2025.1.7
           
       - name: Install SonarQube
         run: dotnet tool install --global dotnet-sonarscanner
@@ -33,7 +31,7 @@ jobs:
             /k:"ballware_ballware-shared-dotnet" \
             /o:"ballware" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.dotcover.reportsPaths="coverage.html" \
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
             /d:sonar.exclusions="**/Migrations/**/*"
           
       - name: Restore dependencies
@@ -42,20 +40,11 @@ jobs:
       - name: Build solution
         run: dotnet build ballware-shared.sln --no-incremental --configuration Release
 
-      - name: Run coverage for all test projects
+      - name: Run coverage for all test projects        
         run: |
-          dotCover cover \
-            --TargetExecutable="/usr/bin/dotnet" \
-            --TargetArguments="test ./ballware-shared.sln --no-build --configuration Release --logger trx" \
-            --Output="coverage.dcvr" \
-            --ReturnTargetExitCode
-          
-      - name: Generate HTML report for SonarCloud
-        run: |
-          dotCover report \
-            --source="coverage.dcvr" \
-            --output="coverage.html" \
-            --reportType=HTML           
+          dotnet test ballware-shared.sln --no-build --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover      
         
       - name: End SonarQube scan
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}" 
