@@ -48,15 +48,24 @@ internal static class ToolRegistryRequestHandlers
     {
         var result = new ListToolsResult();
         
-        var toolRegistry = requestContext.Services?.GetRequiredService<IToolRegistry>();
-
-        if (toolRegistry == null)
+        if (requestContext.Services == null)
         {
-            throw new InvalidOperationException($"IToolRegistry not registered in service collection");
+            throw new ArgumentNullException(nameof(requestContext.Services));
         }
+        
+        var user = requestContext.User;
+        var toolRegistry = requestContext.Services.GetRequiredService<IToolRegistry>();
         
         foreach (var tool in await toolRegistry.GetAllToolsAsync())
         {
+            if (tool.IsAuthorizedAsync != null)
+            {
+                if (user == null || !(await tool.IsAuthorizedAsync(requestContext.Services, user)))                
+                {
+                    continue;
+                }
+            }
+            
             var protocolTool = new ModelContextProtocol.Protocol.Tool()
             {
                 Name = tool.Name,
@@ -85,11 +94,6 @@ internal static class ToolRegistryRequestHandlers
         if (serviceProvider == null)
         {
             throw new ArgumentNullException(nameof(requestContext.Services));
-        }
-
-        if (user == null || (!user.Identity?.IsAuthenticated ?? false))
-        {
-            throw new UnauthorizedAccessException();
         }
         
         var toolRegistry = requestContext.Services?.GetRequiredService<IToolRegistry>();
@@ -153,6 +157,14 @@ internal static class ToolRegistryRequestHandlers
                     throw new InvalidOperationException(
                         $"Required argument {toolParam.Name} not provided for tool {tool.Name}");
                 }
+            }
+        }
+
+        if (tool.IsAuthorizedAsync != null) 
+        {
+            if (user == null || !(await tool.IsAuthorizedAsync(serviceProvider, user)))
+            {
+                throw new UnauthorizedAccessException($"User is not authorized to execute tool {tool.Name}");
             }
         }
         

@@ -8,5 +8,6 @@ public class Tool
     public required string Description { get; set; }
     public IEnumerable<ToolParam> Params { get; set; } = [];
     public string? OutputSchema { get; set; }
-    public required Func<IServiceProvider, ClaimsPrincipal, IDictionary<string, object?>, Task<ToolResult>> ExecuteAsync { get; set; }
+    public Func<IServiceProvider, ClaimsPrincipal, Task<bool>>? IsAuthorizedAsync { get; set; }
+    public required Func<IServiceProvider, ClaimsPrincipal?, IDictionary<string, object?>, Task<ToolResult>> ExecuteAsync { get; set; }
 }
