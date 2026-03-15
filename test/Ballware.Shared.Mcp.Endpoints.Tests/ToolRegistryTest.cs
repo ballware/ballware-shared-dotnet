@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Ballware.Shared.Mcp.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ballware.Shared.Mcp.Endpoints.Tests;
 
@@ -7,34 +8,42 @@ namespace Ballware.Shared.Mcp.Endpoints.Tests;
 public class ToolRegistryTest
 {
     private ToolRegistry _sut = null!;
+    private IServiceProvider _serviceProvider = null!;
 
     [SetUp]
     public void SetUp()
     {
         _sut = new ToolRegistry();
+        _serviceProvider = new ServiceCollection().BuildServiceProvider();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        (_serviceProvider as IDisposable)?.Dispose();
     }
 
     #region RegisterTool / GetToolByName
 
     [Test]
-    public void GetToolByName_WithNoToolsRegistered_ReturnsNull()
+    public async Task GetToolByName_WithNoToolsRegistered_ReturnsNull()
     {
         // Act
-        var result = _sut.GetToolByName("nonexistent");
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, "nonexistent");
 
         // Assert
         Assert.That(result, Is.Null);
     }
 
     [Test]
-    public void RegisterTool_AndGetToolByName_ReturnsSameTool()
+    public async Task RegisterTool_AndGetToolByName_ReturnsSameTool()
     {
         // Arrange
         var tool = CreateDummyTool("test-tool", "A test tool");
 
         // Act
-        _sut.RegisterTool(tool);
-        var result = _sut.GetToolByName("test-tool");
+        _sut.RegisterStaticTool(tool);
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, "test-tool");
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -42,29 +51,29 @@ public class ToolRegistryTest
     }
 
     [Test]
-    public void GetToolByName_WithWrongName_ReturnsNull()
+    public async Task GetToolByName_WithWrongName_ReturnsNull()
     {
         // Arrange
-        _sut.RegisterTool(CreateDummyTool("tool-a", "Tool A"));
+        _sut.RegisterStaticTool(CreateDummyTool("tool-a", "Tool A"));
 
         // Act
-        var result = _sut.GetToolByName("tool-b");
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, "tool-b");
 
         // Assert
         Assert.That(result, Is.Null);
     }
 
     [Test]
-    public void RegisterTool_WithSameName_OverwritesPreviousTool()
+    public async Task RegisterTool_WithSameName_OverwritesPreviousTool()
     {
         // Arrange
         var toolV1 = CreateDummyTool("my-tool", "Version 1");
         var toolV2 = CreateDummyTool("my-tool", "Version 2");
 
         // Act
-        _sut.RegisterTool(toolV1);
-        _sut.RegisterTool(toolV2);
-        var result = _sut.GetToolByName("my-tool");
+        _sut.RegisterStaticTool(toolV1);
+        _sut.RegisterStaticTool(toolV2);
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, "my-tool");
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -80,7 +89,7 @@ public class ToolRegistryTest
     public async Task GetAllToolsAsync_WithNoToolsRegistered_ReturnsEmptyCollection()
     {
         // Act
-        var result = await _sut.GetAllToolsAsync();
+        var result = await _sut.GetAllToolsAsync(_serviceProvider);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -92,10 +101,10 @@ public class ToolRegistryTest
     {
         // Arrange
         var tool = CreateDummyTool("single-tool", "A single tool");
-        _sut.RegisterTool(tool);
+        _sut.RegisterStaticTool(tool);
 
         // Act
-        var result = (await _sut.GetAllToolsAsync()).ToList();
+        var result = (await _sut.GetAllToolsAsync(_serviceProvider)).ToList();
 
         // Assert
         Assert.That(result, Has.Count.EqualTo(1));
@@ -106,12 +115,12 @@ public class ToolRegistryTest
     public async Task GetAllToolsAsync_WithMultipleToolsRegistered_ReturnsAllTools()
     {
         // Arrange
-        _sut.RegisterTool(CreateDummyTool("tool-a", "Tool A"));
-        _sut.RegisterTool(CreateDummyTool("tool-b", "Tool B"));
-        _sut.RegisterTool(CreateDummyTool("tool-c", "Tool C"));
+        _sut.RegisterStaticTool(CreateDummyTool("tool-a", "Tool A"));
+        _sut.RegisterStaticTool(CreateDummyTool("tool-b", "Tool B"));
+        _sut.RegisterStaticTool(CreateDummyTool("tool-c", "Tool C"));
 
         // Act
-        var result = (await _sut.GetAllToolsAsync()).ToList();
+        var result = (await _sut.GetAllToolsAsync(_serviceProvider)).ToList();
 
         // Assert
         Assert.That(result, Has.Count.EqualTo(3));
@@ -125,12 +134,12 @@ public class ToolRegistryTest
     public async Task GetAllToolsAsync_AfterOverwrite_ReturnsLatestVersion()
     {
         // Arrange
-        _sut.RegisterTool(CreateDummyTool("tool-a", "Version 1"));
-        _sut.RegisterTool(CreateDummyTool("tool-b", "Tool B"));
-        _sut.RegisterTool(CreateDummyTool("tool-a", "Version 2"));
+        _sut.RegisterStaticTool(CreateDummyTool("tool-a", "Version 1"));
+        _sut.RegisterStaticTool(CreateDummyTool("tool-b", "Tool B"));
+        _sut.RegisterStaticTool(CreateDummyTool("tool-a", "Version 2"));
 
         // Act
-        var result = (await _sut.GetAllToolsAsync()).ToList();
+        var result = (await _sut.GetAllToolsAsync(_serviceProvider)).ToList();
 
         // Assert
         Assert.That(result, Has.Count.EqualTo(2));
@@ -143,7 +152,7 @@ public class ToolRegistryTest
     #region Tool with Params
 
     [Test]
-    public void RegisterTool_WithParams_PreservesParams()
+    public async Task RegisterTool_WithParams_PreservesParams()
     {
         // Arrange
         var tool = new Tool
@@ -160,8 +169,8 @@ public class ToolRegistryTest
         };
 
         // Act
-        _sut.RegisterTool(tool);
-        var result = _sut.GetToolByName("parameterized-tool");
+        _sut.RegisterStaticTool(tool);
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, "parameterized-tool");
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -195,8 +204,8 @@ public class ToolRegistryTest
             }
         };
 
-        _sut.RegisterTool(tool);
-        var resolved = _sut.GetToolByName("executable-tool");
+        _sut.RegisterStaticTool(tool);
+        var resolved = await _sut.GetToolByNameAsync(_serviceProvider, "executable-tool");
 
         // Act
         var result = await resolved!.ExecuteAsync(null!, null, new Dictionary<string, object?>());
@@ -222,8 +231,8 @@ public class ToolRegistryTest
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
 
-        _sut.RegisterTool(tool);
-        var resolved = _sut.GetToolByName("authorized-tool");
+        _sut.RegisterStaticTool(tool);
+        var resolved = await _sut.GetToolByNameAsync(_serviceProvider, "authorized-tool");
 
         var adminPrincipal = new ClaimsPrincipal(new ClaimsIdentity(
             [new Claim(ClaimTypes.Role, "admin")], "test"));

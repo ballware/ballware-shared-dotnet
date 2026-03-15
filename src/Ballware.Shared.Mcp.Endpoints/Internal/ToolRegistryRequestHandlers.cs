@@ -56,7 +56,7 @@ internal static class ToolRegistryRequestHandlers
         var user = requestContext.User;
         var toolRegistry = requestContext.Services.GetRequiredService<IToolRegistry>();
         
-        foreach (var tool in await toolRegistry.GetAllToolsAsync())
+        foreach (var tool in await toolRegistry.GetAllToolsAsync(requestContext.Services))
         {
             if (tool.IsAuthorizedAsync != null)
             {
@@ -107,8 +107,13 @@ internal static class ToolRegistryRequestHandlers
         {
             throw new InvalidOperationException($"No parameters provided");
         }
+
+        if (requestContext.Services is null)
+        {
+            throw new InvalidOperationException($"No service provider provided");       
+        }
         
-        var tool = toolRegistry.GetToolByName(requestContext.Params.Name);
+        var tool = await toolRegistry.GetToolByNameAsync(requestContext.Services, requestContext.Params.Name);
         
         if (tool == null)
         {

@@ -74,7 +74,7 @@ public class McpEndpointHandlerTest
     public async Task ListToolsAsync_WithNoTools_ReturnsEmptyList()
     {
         // Arrange
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync(Enumerable.Empty<Tool>());
 
         var context = CreateRequestContext<ListToolsRequestParams>();
@@ -92,7 +92,7 @@ public class McpEndpointHandlerTest
     {
         // Arrange
         var tool = CreateDummyTool("echo", "Echoes input");
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync([tool]);
 
         var context = CreateRequestContext<ListToolsRequestParams>();
@@ -116,7 +116,7 @@ public class McpEndpointHandlerTest
             CreateDummyTool("tool-b", "Tool B"),
             CreateDummyTool("tool-c", "Tool C")
         };
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync(tools);
 
         var context = CreateRequestContext<ListToolsRequestParams>();
@@ -146,7 +146,7 @@ public class McpEndpointHandlerTest
             ],
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync([tool]);
 
         var context = CreateRequestContext<ListToolsRequestParams>();
@@ -181,7 +181,7 @@ public class McpEndpointHandlerTest
             ],
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync([tool]);
 
         var context = CreateRequestContext<ListToolsRequestParams>();
@@ -207,7 +207,7 @@ public class McpEndpointHandlerTest
             OutputSchema = outputSchema,
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync([tool]);
 
         var context = CreateRequestContext<ListToolsRequestParams>();
@@ -236,7 +236,7 @@ public class McpEndpointHandlerTest
             IsAuthorizedAsync = (_, user) => Task.FromResult(user.IsInRole("admin")),
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync([tool]);
 
         var user = CreateUser(new Claim(ClaimTypes.Role, "admin"));
@@ -261,7 +261,7 @@ public class McpEndpointHandlerTest
             IsAuthorizedAsync = (_, user) => Task.FromResult(user.IsInRole("admin")),
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync([tool]);
 
         var user = CreateUser(new Claim(ClaimTypes.Role, "user"));
@@ -285,7 +285,7 @@ public class McpEndpointHandlerTest
             IsAuthorizedAsync = (_, user) => Task.FromResult(user.IsInRole("admin")),
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync([tool]);
 
         var context = CreateRequestContext<ListToolsRequestParams>(user: null);
@@ -317,7 +317,7 @@ public class McpEndpointHandlerTest
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
 
-        ToolRegistryMock.Setup(r => r.GetAllToolsAsync())
+        ToolRegistryMock.Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
             .ReturnsAsync([publicTool, adminTool, editorTool]);
 
         var user = CreateUser(new Claim(ClaimTypes.Role, "editor"));
@@ -371,7 +371,7 @@ public class McpEndpointHandlerTest
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("Hello, World!"))
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("hello")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "hello")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -410,7 +410,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("greet")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "greet")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -450,7 +450,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("double-it")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "double-it")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -489,7 +489,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("flag-tool")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "flag-tool")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -528,7 +528,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("flag-tool")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "flag-tool")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -569,7 +569,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("multi-param")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "multi-param")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -609,7 +609,7 @@ public class McpEndpointHandlerTest
                 Task.FromResult(ToolResult.FromStructuredContent(new { Name = "Test", Value = 42 }))
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("structured")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "structured")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -643,7 +643,7 @@ public class McpEndpointHandlerTest
                     "Summary: Test=42"))
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("structured-with-text")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "structured-with-text")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -683,7 +683,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("admin-action")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "admin-action")).ReturnsAsync(tool);
 
         var user = CreateUser(new Claim(ClaimTypes.Role, "admin"));
         var callParams = new CallToolRequestParams
@@ -713,7 +713,7 @@ public class McpEndpointHandlerTest
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("should not reach"))
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("admin-action")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "admin-action")).ReturnsAsync(tool);
 
         var user = CreateUser(new Claim(ClaimTypes.Role, "user"));
         var callParams = new CallToolRequestParams
@@ -740,7 +740,7 @@ public class McpEndpointHandlerTest
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("should not reach"))
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("admin-action")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "admin-action")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -762,7 +762,7 @@ public class McpEndpointHandlerTest
     public void CallToolAsync_WithUnknownTool_ThrowsInvalidOperationException()
     {
         // Arrange
-        ToolRegistryMock.Setup(r => r.GetToolByName("unknown")).Returns((Tool?)null);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "unknown")).ReturnsAsync((Tool?)null);
 
         var callParams = new CallToolRequestParams
         {
@@ -825,7 +825,7 @@ public class McpEndpointHandlerTest
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("requires-args")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "requires-args")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -854,7 +854,7 @@ public class McpEndpointHandlerTest
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("requires-args")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "requires-args")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -883,7 +883,7 @@ public class McpEndpointHandlerTest
             ExecuteAsync = (_, _, _) => Task.FromResult(ToolResult.FromText("ok"))
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("typed-tool")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "typed-tool")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -925,7 +925,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("optional-tool")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "optional-tool")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -962,7 +962,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("no-params")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "no-params")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -999,7 +999,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("user-aware")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "user-aware")).ReturnsAsync(tool);
 
         var expectedUser = CreateUser(
             new Claim(ClaimTypes.Name, "testuser"),
@@ -1037,7 +1037,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("service-aware")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "service-aware")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
@@ -1078,7 +1078,7 @@ public class McpEndpointHandlerTest
             }
         };
 
-        ToolRegistryMock.Setup(r => r.GetToolByName("case-tool")).Returns(tool);
+        ToolRegistryMock.Setup(r => r.GetToolByNameAsync(It.IsAny<IServiceProvider>(), "case-tool")).ReturnsAsync(tool);
 
         var callParams = new CallToolRequestParams
         {
