@@ -56,7 +56,7 @@ internal static class ToolRegistryRequestHandlers
         var user = requestContext.User;
         var toolRegistry = requestContext.Services.GetRequiredService<IToolRegistry>();
         
-        foreach (var tool in await toolRegistry.GetAllToolsAsync(requestContext.Services))
+        foreach (var tool in await toolRegistry.GetAllToolsAsync(requestContext.Services, user))
         {
             if (tool.IsAuthorizedAsync != null)
             {
@@ -113,7 +113,7 @@ internal static class ToolRegistryRequestHandlers
             throw new InvalidOperationException($"No service provider provided");       
         }
         
-        var tool = await toolRegistry.GetToolByNameAsync(requestContext.Services, requestContext.Params.Name);
+        var tool = await toolRegistry.GetToolByNameAsync(requestContext.Services, user, requestContext.Params.Name);
         
         if (tool == null)
         {

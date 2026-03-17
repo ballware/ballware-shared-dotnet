@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace Ballware.Shared.Mcp.Internal;
 
 internal class ToolRegistry : IToolRegistry
@@ -7,34 +9,31 @@ internal class ToolRegistry : IToolRegistry
         get; 
     } = new();
     
-    private Dictionary<string, Tool> CachedTools
+    private List<Func<IServiceProvider, ClaimsPrincipal?, Task<IEnumerable<Tool>>>> DynamicToolProviders
     {
         get; 
     } = new();
     
-    private List<Func<IServiceProvider, Task<IEnumerable<Tool>>>> DynamicToolProviders
+    private async Task<Dictionary<string, Tool>> BuildToolListAsync(IServiceProvider serviceProvider, ClaimsPrincipal? user)
     {
-        get; 
-    } = new();
-    
-    private async Task FillCacheAsync(IServiceProvider serviceProvider)
-    {
-        CachedTools.Clear();
+        var result = new Dictionary<string, Tool>();
 
         foreach (var tool in StaticTools)
         {
-            CachedTools[tool.Key] = tool.Value;
+            result[tool.Key] = tool.Value;
         }
         
         foreach (var provider in DynamicToolProviders)
         {
-            var providerTools = await provider(serviceProvider);
+            var providerTools = await provider(serviceProvider, user);
 
             foreach (var tool in providerTools)
             {
-                CachedTools[tool.Name] = tool;
+                result[tool.Name] = tool;
             }
         }
+
+        return result;
     }
     
     public void RegisterStaticTool(Tool tool)
@@ -42,25 +41,20 @@ internal class ToolRegistry : IToolRegistry
         StaticTools[tool.Name] = tool;
     }
     
-    public void RegisterDynamicToolProvider(Func<IServiceProvider, Task<IEnumerable<Tool>>> provider)
+    public void RegisterDynamicToolProvider(Func<IServiceProvider, ClaimsPrincipal?, Task<IEnumerable<Tool>>> provider)
     {
         DynamicToolProviders.Add(provider);
     }
 
-    public async Task<IEnumerable<Tool>> GetAllToolsAsync(IServiceProvider serviceProvider)
+    public async Task<IEnumerable<Tool>> GetAllToolsAsync(IServiceProvider serviceProvider, ClaimsPrincipal? user)
     {
-        await FillCacheAsync(serviceProvider);
-        
-        return CachedTools.Values;
+        return (await BuildToolListAsync(serviceProvider, user)).Values;
     }
 
-    public async Task<Tool?> GetToolByNameAsync(IServiceProvider serviceProvider, string name)
+    public async Task<Tool?> GetToolByNameAsync(IServiceProvider serviceProvider, ClaimsPrincipal? user, string name)
     {
-        if (CachedTools.Count == 0)
-        {
-            await FillCacheAsync(serviceProvider);
-        }
+        var tools = await BuildToolListAsync(serviceProvider, user);
         
-        return CachedTools.GetValueOrDefault(name);
+        return tools.GetValueOrDefault(name);
     }
 }

@@ -66,7 +66,7 @@ public class McpAuthorizationTest : ApiMappingBaseTest
 
         ToolRegistryMock = new Mock<IToolRegistry>();
         ToolRegistryMock
-            .Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>()))
+            .Setup(r => r.GetAllToolsAsync(It.IsAny<IServiceProvider>(), It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync(Array.Empty<Tool>());
 
         Options = new McpEndpointOptions

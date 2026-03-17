@@ -29,7 +29,7 @@ public class ToolRegistryTest
     public async Task GetToolByName_WithNoToolsRegistered_ReturnsNull()
     {
         // Act
-        var result = await _sut.GetToolByNameAsync(_serviceProvider, "nonexistent");
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, null, "nonexistent");
 
         // Assert
         Assert.That(result, Is.Null);
@@ -43,7 +43,7 @@ public class ToolRegistryTest
 
         // Act
         _sut.RegisterStaticTool(tool);
-        var result = await _sut.GetToolByNameAsync(_serviceProvider, "test-tool");
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, null, "test-tool");
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -57,7 +57,7 @@ public class ToolRegistryTest
         _sut.RegisterStaticTool(CreateDummyTool("tool-a", "Tool A"));
 
         // Act
-        var result = await _sut.GetToolByNameAsync(_serviceProvider, "tool-b");
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, null, "tool-b");
 
         // Assert
         Assert.That(result, Is.Null);
@@ -73,7 +73,7 @@ public class ToolRegistryTest
         // Act
         _sut.RegisterStaticTool(toolV1);
         _sut.RegisterStaticTool(toolV2);
-        var result = await _sut.GetToolByNameAsync(_serviceProvider, "my-tool");
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, null, "my-tool");
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -89,7 +89,7 @@ public class ToolRegistryTest
     public async Task GetAllToolsAsync_WithNoToolsRegistered_ReturnsEmptyCollection()
     {
         // Act
-        var result = await _sut.GetAllToolsAsync(_serviceProvider);
+        var result = await _sut.GetAllToolsAsync(_serviceProvider, null);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -104,7 +104,7 @@ public class ToolRegistryTest
         _sut.RegisterStaticTool(tool);
 
         // Act
-        var result = (await _sut.GetAllToolsAsync(_serviceProvider)).ToList();
+        var result = (await _sut.GetAllToolsAsync(_serviceProvider, null)).ToList();
 
         // Assert
         Assert.That(result, Has.Count.EqualTo(1));
@@ -120,7 +120,7 @@ public class ToolRegistryTest
         _sut.RegisterStaticTool(CreateDummyTool("tool-c", "Tool C"));
 
         // Act
-        var result = (await _sut.GetAllToolsAsync(_serviceProvider)).ToList();
+        var result = (await _sut.GetAllToolsAsync(_serviceProvider, null)).ToList();
 
         // Assert
         Assert.That(result, Has.Count.EqualTo(3));
@@ -139,7 +139,7 @@ public class ToolRegistryTest
         _sut.RegisterStaticTool(CreateDummyTool("tool-a", "Version 2"));
 
         // Act
-        var result = (await _sut.GetAllToolsAsync(_serviceProvider)).ToList();
+        var result = (await _sut.GetAllToolsAsync(_serviceProvider, null)).ToList();
 
         // Assert
         Assert.That(result, Has.Count.EqualTo(2));
@@ -170,7 +170,7 @@ public class ToolRegistryTest
 
         // Act
         _sut.RegisterStaticTool(tool);
-        var result = await _sut.GetToolByNameAsync(_serviceProvider, "parameterized-tool");
+        var result = await _sut.GetToolByNameAsync(_serviceProvider, null, "parameterized-tool");
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -205,7 +205,7 @@ public class ToolRegistryTest
         };
 
         _sut.RegisterStaticTool(tool);
-        var resolved = await _sut.GetToolByNameAsync(_serviceProvider, "executable-tool");
+        var resolved = await _sut.GetToolByNameAsync(_serviceProvider, null, "executable-tool");
 
         // Act
         var result = await resolved!.ExecuteAsync(null!, null, new Dictionary<string, object?>());
@@ -232,7 +232,7 @@ public class ToolRegistryTest
         };
 
         _sut.RegisterStaticTool(tool);
-        var resolved = await _sut.GetToolByNameAsync(_serviceProvider, "authorized-tool");
+        var resolved = await _sut.GetToolByNameAsync(_serviceProvider, null, "authorized-tool");
 
         var adminPrincipal = new ClaimsPrincipal(new ClaimsIdentity(
             [new Claim(ClaimTypes.Role, "admin")], "test"));
