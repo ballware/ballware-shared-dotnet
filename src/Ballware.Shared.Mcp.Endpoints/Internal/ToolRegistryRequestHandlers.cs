@@ -84,7 +84,7 @@ internal class ToolRegistryRequestHandlers
             result.Tools.Add(protocolTool);
         }
         
-        logger?.LogDebug("ListToolsAsync result: {result}", result);
+        logger?.LogDebug("ListToolsAsync result: {result}", FormatForLog(result));
 
         return result;
     }
@@ -210,8 +210,59 @@ internal class ToolRegistryRequestHandlers
             ];
         }
         
-        logger?.LogDebug("CallToolAsync {tool} result: {result}", tool.Name, callToolResult);
+        logger?.LogDebug("CallToolAsync {tool} result: {result}", tool.Name, FormatForLog(callToolResult));
         
         return callToolResult;
+    }
+
+    internal static string FormatForLog(CallToolResult result)
+    {
+        var parts = new List<string>();
+
+        if (result.IsError == true)
+        {
+            parts.Add("IsError=true");
+        }
+
+        if (result.Content is { Count: > 0 })
+        {
+            var contentDescriptions = result.Content.Select<ContentBlock, string>(block => block switch
+            {
+                TextContentBlock text =>
+                    $"Text({(text.Text?.Length > 200 ? text.Text[..200] + "…" : text.Text ?? "")})",
+                ImageContentBlock image =>
+                    $"Image(mimeType={image.MimeType}, bytes={image.DecodedData.Length})",
+                AudioContentBlock audio =>
+                    $"Audio(mimeType={audio.MimeType}, bytes={audio.DecodedData.Length})",
+                EmbeddedResourceBlock resource =>
+                    $"EmbeddedResource(type={resource.Resource?.GetType().Name ?? "unknown"})",
+                _ => $"Unknown(type={block.Type})"
+            });
+
+            parts.Add($"Content=[{string.Join(", ", contentDescriptions)}]");
+        }
+        else
+        {
+            parts.Add("Content=[]");
+        }
+
+        if (result.StructuredContent.HasValue)
+        {
+            var raw = result.StructuredContent.Value.GetRawText();
+            parts.Add($"StructuredContent={( raw.Length > 200 ? raw[..200] + "…" : raw )}");
+        }
+
+        return string.Join(", ", parts);
+    }
+
+    internal static string FormatForLog(ListToolsResult result)
+    {
+        if (result.Tools.Count == 0)
+        {
+            return "Tools=[]";
+        }
+
+        var toolNames = result.Tools.Select(t => t.Name);
+        return $"Tools({result.Tools.Count})=[{string.Join(", ", toolNames)}]";
     }
 }
