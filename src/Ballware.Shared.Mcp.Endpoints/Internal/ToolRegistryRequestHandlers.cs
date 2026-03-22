@@ -1,13 +1,14 @@
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using NJsonSchema;
 
 namespace Ballware.Shared.Mcp.Endpoints.Internal;
 
-internal static class ToolRegistryRequestHandlers
+internal class ToolRegistryRequestHandlers
 {
     private static JsonElement CreateInputSchemaFromParams(IEnumerable<ToolParam> toolParams)
     {
@@ -53,6 +54,8 @@ internal static class ToolRegistryRequestHandlers
             throw new ArgumentNullException(nameof(requestContext.Services));
         }
         
+        var logger = requestContext.Services.GetService<ILogger<ToolRegistryRequestHandlers>>();
+        
         var user = requestContext.User;
         var toolRegistry = requestContext.Services.GetRequiredService<IToolRegistry>();
         
@@ -80,6 +83,8 @@ internal static class ToolRegistryRequestHandlers
             
             result.Tools.Add(protocolTool);
         }
+        
+        logger?.LogDebug("ListToolsAsync result: {result}", result);
 
         return result;
     }
@@ -96,6 +101,7 @@ internal static class ToolRegistryRequestHandlers
             throw new ArgumentNullException(nameof(requestContext.Services));
         }
         
+        var logger = serviceProvider.GetService<ILogger<ToolRegistryRequestHandlers>>();
         var toolRegistry = requestContext.Services?.GetRequiredService<IToolRegistry>();
         
         if (toolRegistry == null)
@@ -173,6 +179,8 @@ internal static class ToolRegistryRequestHandlers
             }
         }
         
+        logger?.LogDebug("CallToolAsync: {tool} with arguments {arguments}", tool.Name, arguments);
+        
         var result = await tool.ExecuteAsync(serviceProvider, user, arguments);
 
         var callToolResult = new CallToolResult();
@@ -201,6 +209,8 @@ internal static class ToolRegistryRequestHandlers
                 }
             ];
         }
+        
+        logger?.LogDebug("CallToolAsync {tool} result: {result}", tool.Name, callToolResult);
         
         return callToolResult;
     }
