@@ -32,6 +32,19 @@ class DefaultPrincipalUtils : IPrincipalUtils
 
         return tenantId;
     }
+    
+    public IEnumerable<Guid> GetUserTenantIds(ClaimsPrincipal principal)
+    {
+        return principal.Claims?.Where(cl => cl.Type == TenantClaim).Select(cl =>
+        {
+            if (Guid.TryParse(cl.Value, out var tenantId))
+            {
+                return tenantId;
+            }
+            
+            throw new ArgumentException($"Invalid TenantClaim value {cl.Value}", nameof(TenantClaim));
+        }) ?? [];
+    }
 
     public Dictionary<string, object> GetUserClaims(ClaimsPrincipal principal)
     {

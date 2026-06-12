@@ -13,12 +13,13 @@
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="Jint" Version="4.6.2" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
+      <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.1.0" />
+      <PackageReference Include="NJsonSchema" Version="11.5.2" />
     </ItemGroup>
-    
+
     <ItemGroup>
-      <ProjectReference Include="..\Ballware.Shared.Authorization\Ballware.Shared.Authorization.csproj" />
+      <ProjectReference Include="..\Ballware.Shared.Mcp\Ballware.Shared.Mcp.csproj" />
     </ItemGroup>
 
 </Project>
