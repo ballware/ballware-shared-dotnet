@@ -49,6 +49,65 @@ public class DefaultPrincipalUtilsTest
     }
 
     [Test]
+    public void Get_tenant_ids_from_principal_should_succeed()
+    {
+        var expectedTenantIds = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        var principalClaims = new List<Claim>
+        {
+            new("tenant", expectedTenantIds[0].ToString()),
+            new("non_relevant_claim", Guid.NewGuid().ToString()),
+            new("tenant", expectedTenantIds[1].ToString()),
+            new("tenant", expectedTenantIds[2].ToString())
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(principalClaims));
+        var subject = new DefaultPrincipalUtils("tenant", "sub", "right");
+
+        var actualTenantIds = subject.GetUserTenantIds(principal);
+
+        Assert.That(actualTenantIds, Is.EqualTo(expectedTenantIds));
+    }
+
+    [Test]
+    public void Get_tenant_ids_from_principal_without_tenant_claims_should_return_empty_result()
+    {
+        var principalClaims = new List<Claim>
+        {
+            new("sub", Guid.NewGuid().ToString()),
+            new("non_relevant_claim", Guid.NewGuid().ToString())
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(principalClaims));
+        var subject = new DefaultPrincipalUtils("tenant", "sub", "right");
+
+        var actualTenantIds = subject.GetUserTenantIds(principal);
+
+        Assert.That(actualTenantIds, Is.Empty);
+    }
+
+    [Test]
+    public void Get_tenant_ids_from_principal_with_invalid_tenant_claim_should_throw()
+    {
+        var principalClaims = new List<Claim>
+        {
+            new("tenant", Guid.NewGuid().ToString()),
+            new("tenant", "invalid tenant id")
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(principalClaims));
+        var subject = new DefaultPrincipalUtils("tenant", "sub", "right");
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => subject.GetUserTenantIds(principal).ToList());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(exception?.ParamName, Is.EqualTo("TenantClaim"));
+            Assert.That(exception?.Message, Does.Contain("invalid tenant id"));
+        });
+    }
+
+    [Test]
     public void Get_claims_from_principal_should_succeed()
     {
         var principalClaims = new List<Claim>();
