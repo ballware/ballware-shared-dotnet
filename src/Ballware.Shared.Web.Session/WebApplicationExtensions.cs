@@ -27,7 +27,7 @@ public static class WebApplicationExtensions
     public static WebApplication UseBallwareChallengeDifferentiation(this WebApplication app, string[]? transportPathPrefixes = null)
     {
         app.UseMiddleware<ChallengeDifferentiationMiddleware>(
-            transportPathPrefixes is { Length: > 0 } ? transportPathPrefixes : ChallengeDifferentiationMiddleware.DefaultTransportPathPrefixes);
+            new object[] { transportPathPrefixes is { Length: > 0 } ? transportPathPrefixes : ChallengeDifferentiationMiddleware.DefaultTransportPathPrefixes });
 
         return app;
     }
