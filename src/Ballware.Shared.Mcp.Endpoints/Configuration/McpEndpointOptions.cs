@@ -11,7 +11,7 @@ public class McpEndpointOptions
     
     /// <summary>
     /// The resource identifier URI for the MCP server.
-    /// Used in the OAuth Protected Resource Metadata response (RFC 9470).
+    /// Used in the OAuth Protected Resource Metadata response (RFC 9728).
     /// </summary>
     [Required]
     public required string ResourceUri { get; set; }
