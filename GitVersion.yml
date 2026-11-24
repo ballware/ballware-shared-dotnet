@@ -1,31 +1,35 @@
-mode: ContinuousDeployment
-branches:
-  main:
-    regex: ^main$
-    increment: Patch
-    prevent-increment:
-      of-merged-branch: true
-    tracks-release-branches: true
-    
-  develop:
-    regex: ^develop$
-    increment: Minor
-    source-branches: 
-      - main
-      - feature
-      - bugfix
-  
-  feature:
-    regex: ^feature[/-]
-    increment: Minor
-    source-branches:
-      - develop
-  
-  bugfix:
-    regex: ^bugfix[/-]
-    increment: Patch
-    source-branches:
-      - develop
-      - main
+workflow: GitFlow/v1
+calculation:
+  commit-message-incrementing: Enabled
+  branches:
+    main:
+      regex: ^main$
+      increment: Patch
+      mode: ContinuousDeployment
+      prevent-increment:
+        of-merged-branch: true
+      tracks-release-branches: true
 
-commit-message-incrementing: Enabled
+    develop:
+      regex: ^develop$
+      increment: Minor
+      mode: ContinuousDeployment
+      source-branches:
+        - main
+        - feature
+        - bugfix
+
+    feature:
+      regex: ^feature[/-]
+      increment: Minor
+      mode: ContinuousDeployment
+      source-branches:
+        - develop
+
+    bugfix:
+      regex: ^bugfix[/-]
+      increment: Patch
+      mode: ContinuousDeployment
+      source-branches:
+        - develop
+        - main
