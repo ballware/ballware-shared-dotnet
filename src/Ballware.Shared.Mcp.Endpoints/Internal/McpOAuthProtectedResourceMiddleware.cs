@@ -7,7 +7,7 @@ namespace Ballware.Shared.Mcp.Endpoints.Internal;
 
 /// <summary>
 /// Middleware that handles MCP OAuth 2.0 Protected Resource requirements:
-/// 1. Serves the /.well-known/oauth-protected-resource metadata endpoint (RFC 9470)
+/// 1. Serves the /.well-known/oauth-protected-resource metadata endpoint (RFC 9728)
 /// 2. Enriches 401 responses with proper WWW-Authenticate Bearer challenge headers
 ///    including the resource_metadata parameter per MCP specification
 /// </summary>

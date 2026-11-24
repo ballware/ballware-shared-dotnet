@@ -16,6 +16,15 @@ ballware-shared.sln
 
 Each `Ballware.Shared.*` project has a sibling `Ballware.Shared.*.Tests` project; implementation details are kept `internal` and exposed to tests via `InternalsVisibleTo`.
 
+## Documentation
+
+Detailed documentation of how the libraries work lives in [`docs/`](docs/README.md):
+
+- [docs/README.md](docs/README.md) — index, reading order, refresh checklist
+- [docs/concepts/](docs/concepts/) — cross-cutting mechanics (architecture, tenancy, rights cascade, editing API & jobs, MCP, web auth)
+- [docs/packages/](docs/packages/) — one page per library (contract, wiring, behavior, tests)
+- [docs/usage/](docs/usage/) — host composition and extension points
+
 ## Architecture Overview
 
 The libraries form four cooperating layers plus a set of cross-cutting conventions:

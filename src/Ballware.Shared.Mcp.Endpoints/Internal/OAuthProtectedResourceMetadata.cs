@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Ballware.Shared.Mcp.Endpoints.Internal;
 
 /// <summary>
-/// Represents the OAuth 2.0 Protected Resource Metadata document (RFC 9470).
+/// Represents the OAuth 2.0 Protected Resource Metadata document (RFC 9728).
 /// This is served at /.well-known/oauth-protected-resource to allow MCP clients
 /// to discover the authorization requirements of the MCP server.
 /// </summary>
